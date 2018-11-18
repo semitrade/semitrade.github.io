@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <title>stg001-long-only-latest-n-days-close-price-based-strategy | Quant</title>
+  <meta name="description" content="Quant">
+  <meta name="keywords" content="Quant">
+  <meta name="HandheldFriendly" content="True">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="strategy 001: long only, when close price lower than previous n days close then buy in, sell if have position and close price higher than latest n days.">
+<meta name="keywords" content="backtest,strategy">
+<meta property="og:type" content="article">
+<meta property="og:title" content="stg001-long-only-latest-n-days-close-price-based-strategy">
+<meta property="og:url" content="http://semitrade.org/2018/10/14/stg001-long-only-latest-n-days-close-price-based-strategy/index.html">
+<meta property="og:site_name" content="Quant">
+<meta property="og:description" content="strategy 001: long only, when close price lower than previous n days close then buy in, sell if have position and close price higher than latest n days.">
+<meta property="og:locale" content="default">
+<meta property="og:image" content="http://semitrade.org/images/stg001.png">
+<meta property="og:updated_time" content="2018-11-16T13:55:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="stg001-long-only-latest-n-days-close-price-based-strategy">
+<meta name="twitter:description" content="strategy 001: long only, when close price lower than previous n days close then buy in, sell if have position and close price higher than latest n days.">
+<meta name="twitter:image" content="http://semitrade.org/images/stg001.png">
+  
+  
+
+	<script src="https://use.typekit.net/eyf3hir.js"></script>
+  <script>try{Typekit.load({ async: false });}catch(e){}</script>
+  <link rel="stylesheet" href="/style.css">
+  <script>
+    function setLoadingBarProgress(num) {
+      document.getElementById('loading-bar').style.width=num+"%";
+    }
+  </script>
+  
+
+</head>
+</html>
+<body>
+  
+  <div id="loading-bar-wrapper">
+  <div id="loading-bar"></div>
+</div>
+
+  <script>setLoadingBarProgress(20)</script>
+  
+  <div id="site-wrapper">
+    
+    <header id="header">
+	<div id="header-wrapper" class="clearfix">
+		<a id="logo" href="/">
+			<img src="">
+			<span id="site-desc">
+			  Quant
+      </span>
+		</a>
+		<button id="site-nav-switch">
+	    <span class="icon icon-menu"></span>
+	  </button>
+	</div>
+	<aside id="site-menu">
+  	<nav>
+  		
+        <a href="/" class="nav-home nav">
+          Home
+        </a>
+      
+        <a href="/about" class="nav-about nav">
+          About
+        </a>
+      
+        <a href="/archives" class="nav-archives nav">
+          Archives
+        </a>
+      
+    </nav>
+	</aside>
+</header>
+    <script>setLoadingBarProgress(40);</script>
+    
+    <main id="main" role="main">
+      <article id="post-stg001-long-only-latest-n-days-close-price-based-strategy" class="post article white-box article-type-post" itemscope="" itemprop="blogPost">
+	<h2 class="title">
+  	<a href="/2018/10/14/stg001-long-only-latest-n-days-close-price-based-strategy/">
+    	stg001-long-only-latest-n-days-close-price-based-strategy
+    </a>
+  </h2>
+	<time>
+	  Oct 14, 2018
+	</time>
+	<section class="content">
+  	<div class="article-entry" itemprop="articleBody">
+    	<blockquote>
+<p>strategy 001: long only, when close price lower than previous n days close then buy in, sell if have position and close price higher than latest n days.</p>
+</blockquote>
+<a id="more"></a>
+<h2 id="1-Data-Prepare"><a href="#1-Data-Prepare" class="headerlink" title="1 Data Prepare"></a>1 Data Prepare</h2><p>Due to the strategy is very very very simple, we just need daily OHLC data of stock. There’s no other data requirements.</p>
+<h2 id="2-Strategy-Design"><a href="#2-Strategy-Design" class="headerlink" title="2 Strategy Design"></a>2 Strategy Design</h2><p>The idea behand strategy above is <code>Reversal Effect</code>.The theory that stock prices overreact to relevant news so that extreme investment performance tends to reverse itself. Some studies indicate that short-term overreaction may lead to long-term reversals as investors recognize and correct past pricing errors.A reversal is a change in the direction of a price trend, which can be a positive or negative change against the prevailing trend. On a price chart, reversals undergo are cognizable change in the price structure.<a href="https://www.investopedia.com/terms/r/reversal.asp#ixzz5UCCrW7SR" target="_blank" rel="noopener">Read more:Reversal</a></p>
+<p>Based on the hypothesis, we test a long only starategy. Assuming that the stock down trend sustained <code>n-bars</code> then <code>REVERSAL</code> occur.The bar may by minutes or daily, depends on the trade frequceny . Reversal occur means price will goes up, so we buy in. Next question is when to exit? Also using <code>REVERSAL</code>, if the price is the highest price during the past <code>m-bars</code>, then we sell stock close the position.When we do backtest, we <strong>assumes that both <code>n</code> and <code>m</code> are stable duing a specific period.</strong></p>
+<p>Strategy 001:</p>
+<p>Buy if \(closePrice<em>t = min(closePrice</em>{t-1}, closePrice<em>{t-2},\cdots<br>,closePrice</em>{t-n})\)\<br>Sell if \(closePrice<em>t = max(closePrice</em>{t-1}, closePrice<em>{t-2},\cdots<br>,closePrice</em>{t-m})\)</p>
+<h2 id="3-Backtest-Analysis"><a href="#3-Backtest-Analysis" class="headerlink" title="3. Backtest Analysis"></a>3. Backtest Analysis</h2><p>Using <a href="http://www.backtrader.org" target="_blank" rel="noopener">backtrader</a> as backtest framework.Create <code>class stg001</code> like below. We use paramaters <code>long_window_size</code> and <code>exit_window_size</code> stand for the compared bars past, default is 5 days. Paramter <code>stop_loss_percent</code> and <code>take_profit_percent</code> stand for when to stop loss and when to take profit. If we have position and the close price have <code>stop_loss_percent</code> decrease then we sell out.Otherwise,if the price goes up to <code>take_profit_percent</code>, we also sell out, take our profit.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">strategy 001: long only, when close price lower than previous n days close then buy in,</span></span><br><span class="line"><span class="string">sell if have position and close price higher than latest n days.</span></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">stg001</span><span class="params">(bt.Strategy)</span>:</span></span><br><span class="line">    params = (</span><br><span class="line">        (<span class="string">'long_window_size'</span>, <span class="number">5</span>),</span><br><span class="line">        (<span class="string">'exit_window_size'</span>, <span class="number">5</span>),</span><br><span class="line">        (<span class="string">'stop_loss_percent'</span>, <span class="number">0.02</span>),</span><br><span class="line">        (<span class="string">'take_profit_percent'</span>, <span class="number">1</span>),</span><br><span class="line">        (<span class="string">'printlog'</span>, <span class="keyword">False</span>),</span><br><span class="line">    )</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">log</span><span class="params">(self, txt, dt=None, doprint=False)</span>:</span></span><br><span class="line">        <span class="string">''' Logging function fot this strategy'''</span></span><br><span class="line">        <span class="keyword">if</span> self.params.printlog <span class="keyword">or</span> doprint:</span><br><span class="line">            dt = dt <span class="keyword">or</span> self.datas[<span class="number">0</span>].datetime.date(<span class="number">0</span>)</span><br><span class="line">            print(<span class="string">'%s, %s'</span> % (dt.isoformat(), txt))</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">__init__</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># Strategy desc</span></span><br><span class="line">        self.name = <span class="string">"stg001"</span></span><br><span class="line">        self.desc = <span class="string">"Long only, Buy if the close is lower than last &#123;&#125;-bars, \\</span></span><br><span class="line"><span class="string">                    Sell once in trade if the close is higher than last &#123;&#125;-bars."</span>.format(</span><br><span class="line">            self.params.long_window_size,self.params.exit_window_size)</span><br><span class="line">        <span class="comment"># To keep track of pending orders and buy price/commission</span></span><br><span class="line">        self.order = <span class="keyword">None</span></span><br><span class="line">        self.buyprice = <span class="keyword">None</span></span><br><span class="line">        self.buycomm = <span class="keyword">None</span></span><br><span class="line">        <span class="comment"># Keep a reference to the "close" line in the data[0] dataseries</span></span><br><span class="line">        self.dataclose = self.datas[<span class="number">0</span>].close</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">notify_order</span><span class="params">(self, order)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> order.status <span class="keyword">in</span> [order.Submitted, order.Accepted]:</span><br><span class="line">            <span class="comment"># Buy/Sell order submitted/accepted to/by broker - Nothing to do</span></span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="comment"># Check if an order has been completed</span></span><br><span class="line">        <span class="comment"># Attention: broker could reject order if not enough cash</span></span><br><span class="line">        <span class="keyword">if</span> order.status <span class="keyword">in</span> [order.Completed]:</span><br><span class="line">            <span class="keyword">if</span> order.isbuy():</span><br><span class="line">                self.log(</span><br><span class="line">                    <span class="string">'BUY EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f'</span> %</span><br><span class="line">                    (order.executed.price,</span><br><span class="line">                     order.executed.value,</span><br><span class="line">                     order.executed.comm))</span><br><span class="line">                self.buyprice = order.executed.price</span><br><span class="line">                self.buycomm = order.executed.comm</span><br><span class="line">            <span class="keyword">else</span>:  <span class="comment"># Sell</span></span><br><span class="line">                self.log(<span class="string">'SELL EXECUTED, Price: %.2f, Cost: %.2f, Comm %.2f'</span> %</span><br><span class="line">                         (order.executed.price,</span><br><span class="line">                          order.executed.value,</span><br><span class="line">                          order.executed.comm))</span><br><span class="line">            self.bar_executed = len(self)</span><br><span class="line">            self.price_executed = order.executed.price</span><br><span class="line">        <span class="keyword">elif</span> order.status <span class="keyword">in</span> [order.Canceled, order.Margin, order.Rejected]:</span><br><span class="line">            self.log(<span class="string">'Order Canceled/Margin/Rejected'</span>)</span><br><span class="line">        self.order = <span class="keyword">None</span></span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">notify_trade</span><span class="params">(self, trade)</span>:</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> trade.isclosed:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        self.log(<span class="string">'OPERATION PROFIT, GROSS %.2f, NET %.2f'</span> %</span><br><span class="line">                 (trade.pnl, trade.pnlcomm))</span><br><span class="line">    <span class="function"><span class="keyword">def</span> <span class="title">next</span><span class="params">(self)</span>:</span></span><br><span class="line">        <span class="comment"># Simply log the closing price of the series from the reference</span></span><br><span class="line">        self.log(<span class="string">'Close, %.2f'</span> % self.dataclose[<span class="number">0</span>])</span><br><span class="line">        <span class="comment"># Check if an order is pending ... if yes, we cannot send a 2nd one</span></span><br><span class="line">        <span class="keyword">if</span> self.order:</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        <span class="comment"># Check if we are in the market</span></span><br><span class="line">        <span class="keyword">if</span> <span class="keyword">not</span> self.position:</span><br><span class="line">            <span class="comment"># Not yet ... we MIGHT BUY if ...</span></span><br><span class="line">            <span class="keyword">if</span> len(self.dataclose) &gt; self.params.long_window_size <span class="keyword">and</span></span><br><span class="line">                (min(self.dataclose.get(size=self.params.long_window_size)) == self.dataclose[<span class="number">0</span>]):</span><br><span class="line">                <span class="comment"># current close less than previous close</span></span><br><span class="line">                self.log(<span class="string">'BUY CREATE, %.2f'</span> % self.dataclose[<span class="number">0</span>])</span><br><span class="line">                <span class="comment"># Keep track of the created order to avoid a 2nd order</span></span><br><span class="line">                self.order = self.buy()</span><br><span class="line">        <span class="keyword">else</span>:</span><br><span class="line">            <span class="comment"># Already in the market ... we might sell # Stop Loss at Specific Percent Order</span></span><br><span class="line">            <span class="keyword">if</span> (len(self.dataclose) &gt; self.params.exit_window_size <span class="keyword">and</span></span><br><span class="line">                (max(self.dataclose.get(size=self.params.exit_window_size)) == self.dataclose[<span class="number">0</span>])) <span class="keyword">or</span></span><br><span class="line">                self.dataclose[<span class="number">0</span>] &lt;= (self.price_executed* (<span class="number">1</span>-self.params.stop_loss_percent)) <span class="keyword">or</span></span><br><span class="line">                self.dataclose[<span class="number">0</span>] &gt;= (self.price_executed* (<span class="number">1</span>+self.params.take_profit_percent)):</span><br><span class="line">                <span class="comment"># SELL, SELL, SELL!!! (with all possible default parameters)</span></span><br><span class="line">                self.log(<span class="string">'SELL CREATE, %.2f'</span> % self.dataclose[<span class="number">0</span>])</span><br><span class="line">                <span class="comment"># Keep track of the created order to avoid a 2nd order</span></span><br><span class="line">                self.order = self.sell()</span><br></pre></td></tr></table></figure>
+<p>Using China Stock <code>600132</code> as example, data start from 2015-01-01 end to 2018-10-17, daily OHLCV data. Execute price is <code>next open</code> price, set commission 0.0005, and fixed 500 shares per transaction, orginal account balance to 50000.</p>
+<h3 id="3-1-Raw-5-bars-in-5-bars-exit-no-stop-loss-no-take-profit"><a href="#3-1-Raw-5-bars-in-5-bars-exit-no-stop-loss-no-take-profit" class="headerlink" title="3.1 Raw: 5-bars in, 5-bars exit,no stop_loss, no take_profit."></a>3.1 Raw: 5-bars in, 5-bars exit,no stop_loss, no take_profit.</h3><p>Backtest result like below. The <code>Return=6.57%</code>, while annual return is very small, average around <code>1%</code>. The most important is loss transaction(64 times) larger than win transcation(54 times),it means more times the strategy failed.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">Backtest stg001 Stock 600132</span></span><br><span class="line"><span class="string">Data Shape (922, 5)</span></span><br><span class="line"><span class="string">Orignal Acc Bal: 50,000</span></span><br><span class="line"><span class="string">Shares per trans: 500</span></span><br><span class="line"><span class="string">Commission: 5/10000</span></span><br><span class="line"><span class="string">Summary of stg001: Long only, Buy if the close is lower than last 5-bars, Sell once in trade if the close is higher than last 5-bars.</span></span><br><span class="line"><span class="string">Return:          6.57%(53,395/50,000)</span></span><br><span class="line"><span class="string">Sharp Ratio:     0.70%</span></span><br><span class="line"><span class="string">PnL Net:         2,947(Gross:4,057)</span></span><br><span class="line"><span class="string">SQN:             0.58</span></span><br><span class="line"><span class="string">Max Drawdown:    6.30%</span></span><br><span class="line"><span class="string">Max Drawdown:    3,199($)/409(Days)</span></span><br><span class="line"><span class="string">Trans(Win/Loss): 118(54+/64-)</span></span><br><span class="line"><span class="string">Annual Return:</span></span><br><span class="line"><span class="string">  AR_2015 : 0.78%</span></span><br><span class="line"><span class="string">  AR_2016 : 0.83%</span></span><br><span class="line"><span class="string">  AR_2017 : 3.10%</span></span><br><span class="line"><span class="string">  AR_2018 : 1.94%</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-2-Better-5-bars-in-5-bars-exit-stop-loss-at-2-decrease-take-profit-at-10-up"><a href="#3-2-Better-5-bars-in-5-bars-exit-stop-loss-at-2-decrease-take-profit-at-10-up" class="headerlink" title="3.2 Better: 5-bars in, 5-bars exit, stop_loss at 2% decrease, take_profit at 10% up."></a>3.2 Better: 5-bars in, 5-bars exit, stop_loss at 2% decrease, take_profit at 10% up.</h3><p>Both annual return and win/loss ratio are better than the previous one.</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">Backtest stg001 Stock 600132</span></span><br><span class="line"><span class="string">Data Shape (922, 5)</span></span><br><span class="line"><span class="string">Orignal Acc Bal: 50,000</span></span><br><span class="line"><span class="string">Shares per trans: 500</span></span><br><span class="line"><span class="string">Commission: 5/10000</span></span><br><span class="line"><span class="string">-------Summary-------</span></span><br><span class="line"><span class="string">Summary of stg001: Long only</span></span><br><span class="line"><span class="string">Buy if the close is lower than last 5-bars.</span></span><br><span class="line"><span class="string">Sell if the close is higher than last 5-bars.</span></span><br><span class="line"><span class="string">Stop loss when price decrease 2%.</span></span><br><span class="line"><span class="string">Take profit when up 10% percent.</span></span><br><span class="line"><span class="string">------------------------------------------</span></span><br><span class="line"><span class="string">Return:          20.31%(61,260/50,000)</span></span><br><span class="line"><span class="string">Sharp Ratio:     2.58%</span></span><br><span class="line"><span class="string">PnL Net:         11,260(Gross:12,250)</span></span><br><span class="line"><span class="string">SQN:             2.16</span></span><br><span class="line"><span class="string">Max Drawdown:    5.72%</span></span><br><span class="line"><span class="string">Max Drawdown:    2,980($)/99(Days)</span></span><br><span class="line"><span class="string">Trans(Win/Loss): 105(71+/34-)</span></span><br><span class="line"><span class="string">Annual Return:</span></span><br><span class="line"><span class="string">  AR_2015 : 6.93%</span></span><br><span class="line"><span class="string">  AR_2016 : 3.62%</span></span><br><span class="line"><span class="string">  AR_2017 : 6.79%</span></span><br><span class="line"><span class="string">  AR_2018 : 3.54%</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
+<h3 id="3-3-Best-What-are-the-best-paramesters-in-this-strategy-for-this-stock"><a href="#3-3-Best-What-are-the-best-paramesters-in-this-strategy-for-this-stock" class="headerlink" title="3.3 Best: What are the best paramesters in this strategy for this stock?"></a>3.3 Best: What are the best paramesters in this strategy for this stock?</h3><p>In fact I scaned a range of parameters using code below:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Parallel(n_jobs=<span class="number">-1</span>)(delayed(cerebro_run)(df, long_sz, exit_sz,slp,<span class="number">1</span>)</span><br><span class="line">       <span class="keyword">for</span> long_sz <span class="keyword">in</span> range(<span class="number">3</span>,<span class="number">30</span>)</span><br><span class="line">       <span class="keyword">for</span> exit_sz <span class="keyword">in</span> range(<span class="number">1</span>,<span class="number">10</span>)</span><br><span class="line">       <span class="keyword">for</span> slp <span class="keyword">in</span> [i/<span class="number">100</span> <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">2</span>,<span class="number">5</span>)])</span><br></pre></td></tr></table></figure>
+<p>Finally find below parameter is better than above one, results and plot like below:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">Backtest stg001 Stock 600132</span></span><br><span class="line"><span class="string">Data Shape (922, 5)</span></span><br><span class="line"><span class="string">Orignal Acc Bal: 50,000</span></span><br><span class="line"><span class="string">Shares per trans: 500</span></span><br><span class="line"><span class="string">Commission: 5/10000</span></span><br><span class="line"><span class="string">-------Summary-------</span></span><br><span class="line"><span class="string">Summary of stg001: Long only</span></span><br><span class="line"><span class="string">Buy if the close is lower than last 4-bars.</span></span><br><span class="line"><span class="string">Sell if the close is higher than last 8-bars.</span></span><br><span class="line"><span class="string">Stop loss when price decrease 2%.</span></span><br><span class="line"><span class="string">Take profit when price up 20% percent.</span></span><br><span class="line"><span class="string">------------------------------------------</span></span><br><span class="line"><span class="string">Return:          34.45%(70,563/50,000)</span></span><br><span class="line"><span class="string">Sharp Ratio:     2.74%</span></span><br><span class="line"><span class="string">PnL Net:         20,115(Gross:21,178)</span></span><br><span class="line"><span class="string">SQN:             3.26</span></span><br><span class="line"><span class="string">Max Drawdown:    5.38%</span></span><br><span class="line"><span class="string">Max Drawdown:    2,977($)/52(Days)</span></span><br><span class="line"><span class="string">Trans(Win/Loss): 110(70+/40-)</span></span><br><span class="line"><span class="string">Annual Return:</span></span><br><span class="line"><span class="string">  AR_2015 : 13.91%</span></span><br><span class="line"><span class="string">  AR_2016 : 6.63%</span></span><br><span class="line"><span class="string">  AR_2017 : 6.86%</span></span><br><span class="line"><span class="string">  AR_2018 : 8.73%</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
+<p><img src="/images/stg001.png" alt="stg001"></p>
+<h2 id="4-Further-Step"><a href="#4-Further-Step" class="headerlink" title="4. Further Step"></a>4. Further Step</h2><p>Is there any chance to upgrade the strategy? Maybe:</p>
+<ol>
+<li>Remove the requirements on <code>Long Only</code></li>
+<li>Add <code>Long</code> requirements using TA indicators to detect <code>Rversal</code> more<br>exact.</li>
+<li>Drop assumption <strong>that both <code>n</code> and <code>m</code> are stable duing a specific<br>period</strong>, means flexible <code>long_window_size</code> and <code>exit_window_size</code><br>during backtest.</li>
+</ol>
+
+  	</div>
+
+	  <div class="article-tags tags">
+		  
+        <a class="tag-link" href="/tags/backtest/">backtest</a><a class="tag-link" href="/tags/strategy/">strategy</a>
+      
+	  </div>
+	</section>
+</article>
+
+
+
+
+      <script>setLoadingBarProgress(60);</script>
+    </main>
+    
+    <footer id="footer" class="clearfix">
+  
+  
+	<div class="search">
+	  <form name="searchform" id="searchform" class="u-search-form">
+	    <input type="text" id="searchinput" class="u-search-input" placeholder="Looking for something?">
+	    <button type="submit" id="u-search-btn-submit" class="u-search-btn-submit">
+	      <span class="icon icon-search"></span>
+	    </button>
+	  </form>
+	</div>
+	
+
+	<div class="social-wrapper">
+  	
+      
+        <a href="https://500px.com/dongli_life" class="social twitter" target="_blank" rel="external">
+          <span class="icon icon-twitter"></span>
+        </a>
+      
+        <a href="https://github.com/dongli4life" class="social github" target="_blank" rel="external">
+          <span class="icon icon-github"></span>
+        </a>
+      
+        <a href="http://weibo.com/1341855854" class="social sina-weibo" target="_blank" rel="external">
+          <span class="icon icon-sina-weibo"></span>
+        </a>
+      
+        <a href="https://www.instagram.com/dongli.life/" class="social instagram" target="_blank" rel="external">
+          <span class="icon icon-instagram"></span>
+        </a>
+      
+    
+  </div>
+  
+  <div>Theme <span class="codename">Typescript</span> designed by <a href="http://rakugaki.me/" target="_blank">Art Chen</a>.</div>
+  <div>&copy; <a href="/">Quant</a></div>
+  
+</footer>
+
+
+    <script>setLoadingBarProgress(80);</script>
+    
+  </div>
+
+  
+
+
+
+<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+
+<script src="/js/jquery.fitvids.js"></script>
+<script>
+	var GOOGLE_CUSTOM_SEARCH_API_KEY = "";
+	var GOOGLE_CUSTOM_SEARCH_ENGINE_ID = "";
+	var ALGOLIA_API_KEY = "";
+	var ALGOLIA_APP_ID = "";
+	var ALGOLIA_INDEX_NAME = "";
+  var AZURE_SERVICE_NAME = "";
+  var AZURE_INDEX_NAME = "";
+  var AZURE_QUERY_KEY = "";
+  var BAIDU_API_ID = "";
+  var SEARCH_SERVICE = "google";
+</script>
+<script src="/js/search.js"></script>
+<script src="/js/app.js"></script>
+
+
+  <script>setLoadingBarProgress(100);</script>
+  
+</body>
+</html>
